@@ -12,7 +12,7 @@ struct syscall_entry entry_{{.SyscallName}} = {
 
   {{ range $i, $e := .ArgArray}}
     .arg_type_array[{{$e.ArgSymbol}}] = {{$e.ArgType}},
-    .get_arg_array[{{$e.ArgSymbol}}] = {{$e.GetArg}},
+    .get_arg_array[{{$e.ArgSymbol}}] = {{$e.GetArg}}
   {{ end }}
 
 };
