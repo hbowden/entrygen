@@ -7,12 +7,12 @@ struct syscall_entry entry_{{.SyscallName}} = {
     .syscall_name = "{{.SyscallName}}",
     .syscall_number = {{.EntryNumber}},
     .total_args = {{.TotalArgs}},
-    .return_type = {{.ReturnType}},
+    .return_type = "{{.ReturnType}}",
     .status = ON,
 
-    .arg_type_array[FIRST_ARG] = FILE_PATH,
-    .get_arg_array[FIRST_ARG] = &generate_path,
+  {{ range $i, $e := .ArgArray}}
+    .arg_type_array[{{$e.ArgSymbol}}] = {{$e.ArgType}},
+    .get_arg_array[{{$e.ArgSymbol}}] = {{$e.GetArg}},
+  {{ end }}
 
-    .arg_type_array[SECOND_ARG] = MODE,
-    .get_arg_array[SECOND_ARG] = &generate_mode
 };

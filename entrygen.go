@@ -28,15 +28,20 @@ import (
 	"time"
 )
 
+type Arg struct {
+	ArgType string
+	GetArg  string
+	ArgSymbol string
+}
+
 type Entry struct {
-	Year         string // The year the output files were generated. Used for copyright.
-	SyscallName  string // The name of the system call, ie read, write, wait4, etc.
-	Status       string // Whether the syscall is on or off, defaults to on.
-	ArgTypeArray []string
-	TotalArgs    string
-	EntryNumber  string
-	GetArgArray  []string
-	ReturnType   string
+	Year        string // The year the output files were generated. Used for copyright.
+	SyscallName string // The name of the system call, ie read, write, wait4, etc.
+	Status      string // Whether the syscall is on or off, defaults to on.
+	TotalArgs   string
+	EntryNumber string
+	ReturnType  string
+	ArgArray    []Arg
 }
 
 func extractReturnType(proto string) string {
@@ -55,7 +60,6 @@ func extractReturnType(proto string) string {
 func translateTypes(str []string) []string {
 	typeArray := make([]string, len(str))
 	for i := 0; i < len(str); i++ {
-		log.Printf("type: %s", str[i])
 		switch str[i] {
 		case "user_addr_t":
 			typeArray[i] = "void *"
@@ -119,41 +123,30 @@ func generateGetTypeArray(proto string, count string) []string {
 	return str
 }
 
-func createEntry(syscall string, basedir string) {
-	// Get the syscall number.
-	syscallNumber := extractSyscallNumber(syscall)
+func createArgArray(types []string, args []string, count string) []Arg {
 
-	// Extract the syscall function prototype.
-	proto := extractFunctionPrototype(syscall)
+	log.Printf("count: %s", count)
 
-	// Count how many arguments the syscall has.
-	count := extractTotalArgs(proto)
+	// Convert string to a number.
+	totalArgs, err := strconv.Atoi(count)
+	if err != nil {
+	    totalArgs = 0;
+	}
 
-	// Figure out what type the syscall returns.
-	returnType := extractReturnType(proto)
+	argArray := make([]Arg, totalArgs)
 
-	// Grab the name of the syscall.
-	syscallName := extractSyscallName(proto)
+	symbolArray := [...]string{"FIRST_ARG", "SECOND_ARG", "THIRD_ARG", "FOURTH_ARG", "FIFTH_ARG", "SIXTH_ARG", "SEVENTH_ARG", "EIGTH_ARG"}
 
-	// Generate the get argument array.
-	getArgArray := generateGetArgArray(proto, count)
+	for i := 0; i < totalArgs; i++ {
+		argArray[i].GetArg = args[i]
+		//argArray[i].ArgType = types[i]
+		argArray[i].ArgSymbol = symbolArray[i]
+	}
 
-	// Generate get type array.
-	getTypeArray := generateGetTypeArray(proto, count)
+	return argArray
+}
 
-	// Get the current year.
-	now := time.Now()
-	year := strconv.Itoa(now.Year())
-
-	// Create a syscall entry struct with the extracted info.
-	e := Entry{EntryNumber: syscallNumber,
-		TotalArgs:    count,
-		Year:         year,
-		ReturnType:   returnType,
-		SyscallName:  syscallName,
-		GetArgArray:  getArgArray,
-		ArgTypeArray: getTypeArray}
-
+func writeEntry(entry Entry, name string, dir string) {
 	// Create a syscall entry template.
 	t := template.New("entry.txt")
 	t, err := template.ParseFiles("entry.txt", "warning.txt", "copyright.txt")
@@ -163,7 +156,7 @@ func createEntry(syscall string, basedir string) {
 	}
 
 	// Create a syscall entry file with the system call name appened to entry_.
-	f, err := os.Create(basedir + "/entry_" + syscallName + ".c")
+	f, err := os.Create(dir + "/entry_" + name + ".c")
 	if err != nil {
 		log.Fatal("Can't create file: ", err)
 		return
@@ -173,11 +166,65 @@ func createEntry(syscall string, basedir string) {
 	defer f.Close()
 
 	// Write the template to disk.
-	err = t.Execute(f, e)
+	err = t.Execute(f, entry)
 	if err != nil {
 		log.Fatal("Can't write entry file: ", err)
 		return
 	}
+}
+
+func createEntry(syscall string, basedir string) {
+
+	// Extract the syscall function prototype.
+	proto := extractFunctionPrototype(syscall)
+
+	// Grab the name of the syscall.
+	syscallName := extractSyscallName(proto)
+
+  // Skip empty syscall entries.
+	if syscallName == "enosys" || syscallName == "nosys" {
+  	return;
+	}
+
+	// Count how many arguments the syscall has.
+	count := extractTotalArgs(proto)
+
+  // Let the user know what were creating.
+	log.Printf("Creating: entry_%s.c", syscallName)
+
+	// Get the syscall number.
+	syscallNumber := extractSyscallNumber(syscall)
+
+	// Figure out what type the syscall returns.
+	returnType := extractReturnType(proto)
+
+	// Generate the get argument array.
+	args := generateGetArgArray(proto, count)
+
+	// Generate get type array.
+	types := generateGetTypeArray(proto, count)
+
+	// Get the current year.
+	now := time.Now()
+	year := strconv.Itoa(now.Year())
+
+	argArray := createArgArray(types, args, count)
+
+	// for i := 0; i < len(argArray); i++ {
+	// 	log.Printf("Get: %s", argArray[i].GetArg)
+	// 	log.Printf("Type: %s", argArray[i].ArgType)
+	// 	log.Printf("Sym: %s", argArray[i].ArgSymbol)
+	// }
+
+	// Create a syscall entry struct with the extracted info.
+	e := Entry{EntryNumber: syscallNumber,
+		TotalArgs:   count,
+		Year:        year,
+		ReturnType:  returnType,
+		SyscallName: syscallName,
+		ArgArray:    argArray}
+
+		writeEntry(e, syscallName, basedir)
 }
 
 func extractFunctionPrototype(syscall string) string {
@@ -262,7 +309,7 @@ func generateEntries(platform string, config []byte) {
 	reg := regexp.MustCompilePOSIX("(^[0-9]+).*?")
 	syscalls := reg.FindAll(config, len(config))
 
-  // Check if a platform folder has been created, if not
+	// Check if a platform folder has been created, if not
 	// create one using the name of the os.
 	if _, err := os.Stat(platform); os.IsNotExist(err) {
 		os.Mkdir(platform, 0777)
