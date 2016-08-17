@@ -124,9 +124,6 @@ func generateGetTypeArray(proto string, count string) []string {
 }
 
 func createArgArray(types []string, args []string, count string) []Arg {
-
-	log.Printf("count: %s", count)
-
 	// Convert string to a number.
 	totalArgs, err := strconv.Atoi(count)
 	if err != nil {
@@ -190,7 +187,7 @@ func createEntry(syscall string, basedir string) {
 	count := extractTotalArgs(proto)
 
   // Let the user know what were creating.
-	log.Printf("Creating: entry_%s.c", syscallName)
+	log.Printf("%s: entry_%s.c", basedir, syscallName)
 
 	// Get the syscall number.
 	syscallNumber := extractSyscallNumber(syscall)
@@ -380,7 +377,7 @@ func main() {
 	// Check if no build options, were selected. If not just generate
 	// syscall entries for the operating system we are running on.
 	if *os == "default" {
-		log.Printf("No options passed, defaulting to: %s", runtime.GOOS)
+		log.Printf("No operating system selected, defaulting to: %s", runtime.GOOS)
 		defaultBuild()
 		return
 	}
