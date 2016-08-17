@@ -29,8 +29,8 @@ import (
 )
 
 type Arg struct {
-	ArgType string
-	GetArg  string
+	ArgType   string
+	GetArg    string
 	ArgSymbol string
 }
 
@@ -127,7 +127,7 @@ func createArgArray(types []string, args []string, count string) []Arg {
 	// Convert string to a number.
 	totalArgs, err := strconv.Atoi(count)
 	if err != nil {
-	    totalArgs = 0;
+		totalArgs = 0
 	}
 
 	argArray := make([]Arg, totalArgs)
@@ -178,15 +178,15 @@ func createEntry(syscall string, basedir string) {
 	// Grab the name of the syscall.
 	syscallName := extractSyscallName(proto)
 
-  // Skip empty syscall entries.
+	// Skip empty syscall entries.
 	if syscallName == "enosys" || syscallName == "nosys" {
-  	return;
+		return
 	}
 
 	// Count how many arguments the syscall has.
 	count := extractTotalArgs(proto)
 
-  // Let the user know what were creating.
+	// Let the user know what were creating.
 	log.Printf("%s: entry_%s.c", basedir, syscallName)
 
 	// Get the syscall number.
@@ -221,7 +221,7 @@ func createEntry(syscall string, basedir string) {
 		SyscallName: syscallName,
 		ArgArray:    argArray}
 
-		writeEntry(e, syscallName, basedir)
+	writeEntry(e, syscallName, basedir)
 }
 
 func extractFunctionPrototype(syscall string) string {
