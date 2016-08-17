@@ -17,6 +17,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"io/ioutil"
 	"log"
 	"os"
@@ -25,18 +26,17 @@ import (
 	"strconv"
 	"text/template"
 	"time"
-	"flag"
 )
 
 type Entry struct {
-	Year            string // The year the output files were generated. Used for copyright.
-	SyscallName     string // The name of the system call, ie read, write, wait4, etc.
-	Status          string // Whether the syscall is on or off, defaults to on.
-	ArgTypeArray    []string
-	TotalArgs       string
-	EntryNumber     string
-	GetArgArray     []string
-	ReturnType      string
+	Year         string // The year the output files were generated. Used for copyright.
+	SyscallName  string // The name of the system call, ie read, write, wait4, etc.
+	Status       string // Whether the syscall is on or off, defaults to on.
+	ArgTypeArray []string
+	TotalArgs    string
+	EntryNumber  string
+	GetArgArray  []string
+	ReturnType   string
 }
 
 func extractReturnType(proto string) string {
@@ -52,25 +52,25 @@ func extractReturnType(proto string) string {
 	return buffer.String()
 }
 
-func translateTypes(str []string) ([]string) {
+func translateTypes(str []string) []string {
 	typeArray := make([]string, len(str))
 	for i := 0; i < len(str); i++ {
 		log.Printf("type: %s", str[i])
 		switch str[i] {
-			case "user_addr_t": 
-				typeArray[i] = "void *"
+		case "user_addr_t":
+			typeArray[i] = "void *"
 		}
 	}
 
-   return typeArray
+	return typeArray
 }
 
-func generateGetArgFunction(str []string) ([]string) {
+func generateGetArgFunction(str []string) []string {
 
 	return str
 }
 
-func generateGetArgArray(proto string, count string) ([]string) {
+func generateGetArgArray(proto string, count string) []string {
 	reg := regexp.MustCompilePOSIX("\\((.*?)\\)")
 	params := reg.Find([]byte(proto))
 
@@ -86,20 +86,20 @@ func generateGetArgArray(proto string, count string) ([]string) {
 		return nil
 	}
 
-    // Declare some variables and make a string slice.
-    var str = make([]string, totalArgs)
+	// Declare some variables and make a string slice.
+	var str = make([]string, totalArgs)
 	var buffer bytes.Buffer
-	commaCount := 0;
+	commaCount := 0
 
-    // Parse out arguments types and stick them into the string slice, str.
+	// Parse out arguments types and stick them into the string slice, str.
 	for i := 1; i < len(params); i++ {
-		if string(params[i]) == ")"  {
+		if string(params[i]) == ")" {
 			str[commaCount] = buffer.String()
-			break;
+			break
 		} else if string(params[i]) == "," {
 			str[commaCount] = buffer.String()
 			buffer.Reset()
-			commaCount++;
+			commaCount++
 		} else {
 			buffer.WriteString(string(params[i]))
 		}
@@ -108,18 +108,18 @@ func generateGetArgArray(proto string, count string) ([]string) {
 	/* The arguments grabbed from syscall.master use the kernel
 	space type names for argument types. Translate the kernel names to their
 	equivalent userspace types. */
-	str = translateTypes(str);
+	str = translateTypes(str)
 
-    // Take the translated types and generate the right get arg function name.
+	// Take the translated types and generate the right get arg function name.
 	return generateGetArgFunction(str)
 }
 
-func generateGetTypeArray(proto string, count string) ([]string) {
-	var str []string;
+func generateGetTypeArray(proto string, count string) []string {
+	var str []string
 	return str
 }
 
-func createEntry(syscall string) {
+func createEntry(syscall string, basedir string) {
 	// Get the syscall number.
 	syscallNumber := extractSyscallNumber(syscall)
 
@@ -163,7 +163,7 @@ func createEntry(syscall string) {
 	}
 
 	// Create a syscall entry file with the system call name appened to entry_.
-	f, err := os.Create("entry_" + syscallName + ".c")
+	f, err := os.Create(basedir + "/entry_" + syscallName + ".c")
 	if err != nil {
 		log.Fatal("Can't create file: ", err)
 		return
@@ -262,16 +262,23 @@ func generateEntries(platform string, config []byte) {
 	reg := regexp.MustCompilePOSIX("(^[0-9]+).*?")
 	syscalls := reg.FindAll(config, len(config))
 
+  // Check if a platform folder has been created, if not
+	// create one using the name of the os.
+	if _, err := os.Stat(platform); os.IsNotExist(err) {
+		os.Mkdir(platform, 0777)
+	}
+
 	// Loop and create syscall entries for this platform.
 	for _, syscall := range syscalls {
 		s := string(syscall)
-		createEntry(s)
+		createEntry(s, platform)
 	}
 
+	return
 }
 
 func defaultBuild() {
-    var err error
+	var err error
 	var SyscallListBuf []byte
 
 	// Check our OS and read it's syscall.master file.
@@ -291,12 +298,12 @@ func defaultBuild() {
 		}
 	}
 
-	generateEntries(runtime.GOOS, SyscallListBuf);
+	generateEntries(runtime.GOOS, SyscallListBuf)
 
 	return
 }
 
-func getConfig(os string) ([]byte) {
+func getConfig(os string) []byte {
 	var err error
 	var SyscallListBuf []byte
 
@@ -316,7 +323,7 @@ func getConfig(os string) ([]byte) {
 		}
 	}
 
-	return SyscallListBuf;
+	return SyscallListBuf
 }
 
 func main() {
@@ -331,9 +338,9 @@ func main() {
 		return
 	}
 
-    // Load the config file into memory. We need the config file to know how
-    // to generate syscall entries. The config file contains number of args 
-    // and syscall types, and more.
+	// Load the config file into memory. We need the config file to know how
+	// to generate syscall entries. The config file contains number of args
+	// and syscall types, and more.
 	config := getConfig(*os)
 
 	// The user want's to generate syscall entries for a specific platform.
