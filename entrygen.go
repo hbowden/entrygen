@@ -156,8 +156,8 @@ func createArgArray(types []string, args []string, count string) []Arg {
 
 func writeEntry(entry Entry, name string, dir string) {
 	// Create a syscall entry template.
-	t := template.New("entry.txt")
-	t, err := template.ParseFiles("entry.txt", "warning.txt", "copyright.txt")
+	t := template.New("input/entry.txt")
+	t, err := template.ParseFiles("input/entry.txt", "input/warning.txt", "input/copyright.txt")
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -362,7 +362,7 @@ func getConfig(os string) []byte {
 	var SyscallListBuf []byte
 
 	if os == "freebsd" {
-		SyscallListBuf, err = ioutil.ReadFile("freebsd-syscall.master")
+		SyscallListBuf, err = ioutil.ReadFile("input/freebsd-syscall.master")
 		if err != nil {
 			log.Fatal(err)
 			return nil
@@ -370,7 +370,7 @@ func getConfig(os string) []byte {
 	}
 
 	if os == "darwin" {
-		SyscallListBuf, err = ioutil.ReadFile("osx-syscall.master")
+		SyscallListBuf, err = ioutil.ReadFile("input/osx-syscall.master")
 		if err != nil {
 			log.Fatal(err)
 			return nil
