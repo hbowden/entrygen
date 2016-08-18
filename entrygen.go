@@ -133,17 +133,17 @@ func createArgArray(types []string, args []string, count string) []Arg {
 	argArray := make([]Arg, totalArgs)
 
 	symbolArray := [...]string{"FIRST_ARG",
-		                         "SECOND_ARG",
-														 "THIRD_ARG",
-														 "FOURTH_ARG",
-														 "FIFTH_ARG",
-														 "SIXTH_ARG",
-														 "SEVENTH_ARG",
-														 "EIGTH_ARG",
-													   "NINTH_ARG",
-													   "TENTH_ARG",
-													   "ELEVENTH_ARG",
-													   "TWELFTH_ARG"}
+		"SECOND_ARG",
+		"THIRD_ARG",
+		"FOURTH_ARG",
+		"FIFTH_ARG",
+		"SIXTH_ARG",
+		"SEVENTH_ARG",
+		"EIGTH_ARG",
+		"NINTH_ARG",
+		"TENTH_ARG",
+		"ELEVENTH_ARG",
+		"TWELFTH_ARG"}
 
 	for i := 0; i < totalArgs; i++ {
 		argArray[i].GetArg = args[i]
@@ -181,7 +181,7 @@ func writeEntry(entry Entry, name string, dir string) {
 	}
 }
 
-func createEntryObject(syscall string) (Entry) {
+func createEntryObject(syscall string) Entry {
 	// Extract the syscall function prototype.
 	proto := extractFunctionPrototype(syscall)
 
@@ -227,11 +227,11 @@ func createEntryObject(syscall string) (Entry) {
 }
 
 func createEntry(syscall string, basedir string) {
-  // Extract information from string and create a
+	// Extract information from string and create a
 	// syscall entry object with the information.
 	entry := createEntryObject(syscall)
 
-  // Write the syscall entry to disk.
+	// Write the syscall entry to disk.
 	writeEntry(entry, entry.SyscallName, basedir)
 }
 
