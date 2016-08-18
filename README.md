@@ -7,7 +7,7 @@ First add the `entrygen` directory to your `GOPATH`. Next change directory into
 the `entrygen` directory. Finally build with `go build entrygen.go`.
 
 # Usage
-To generate syscall entry files run `./entrygen -os platform`. Replace platform with operating system you want to build entry sources for. So to build entry sources for `FreeBSD` run `./entrygen -os freebsd`, or `./entrygen -os darwin` to build entry sources for `macOS`. If you leave off the `-os` option `entrygen` will build entry sources for the system it is running on.
+To generate syscall entry files run `./entrygen -os platform`. Replace platform with the operating system you want to build entry sources for. So to build entry sources for `FreeBSD` run `./entrygen -os freebsd`, or `./entrygen -os darwin` to build entry sources for `macOS`. If you leave off the `-os` option `entrygen` will build entry sources for the system it is running on.
 
 # Design
 
