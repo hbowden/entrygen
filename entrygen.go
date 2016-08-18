@@ -170,24 +170,22 @@ func writeEntry(entry Entry, name string, dir string) {
 	}
 }
 
-func createEntry(syscall string, basedir string) {
-
+func createEntryObject(syscall string) (Entry) {
 	// Extract the syscall function prototype.
 	proto := extractFunctionPrototype(syscall)
 
 	// Grab the name of the syscall.
 	syscallName := extractSyscallName(proto)
 
+	var e Entry
+
 	// Skip empty syscall entries.
 	if syscallName == "enosys" || syscallName == "nosys" {
-		return
+		return e
 	}
 
 	// Count how many arguments the syscall has.
 	count := extractTotalArgs(proto)
-
-	// Let the user know what were creating.
-	log.Printf("%s: entry_%s.c", basedir, syscallName)
 
 	// Get the syscall number.
 	syscallNumber := extractSyscallNumber(syscall)
@@ -207,21 +205,23 @@ func createEntry(syscall string, basedir string) {
 
 	argArray := createArgArray(types, args, count)
 
-	// for i := 0; i < len(argArray); i++ {
-	// 	log.Printf("Get: %s", argArray[i].GetArg)
-	// 	log.Printf("Type: %s", argArray[i].ArgType)
-	// 	log.Printf("Sym: %s", argArray[i].ArgSymbol)
-	// }
-
-	// Create a syscall entry struct with the extracted info.
-	e := Entry{EntryNumber: syscallNumber,
+	e = Entry{EntryNumber: syscallNumber,
 		TotalArgs:   count,
 		Year:        year,
 		ReturnType:  returnType,
 		SyscallName: syscallName,
 		ArgArray:    argArray}
 
-	writeEntry(e, syscallName, basedir)
+	return e
+}
+
+func createEntry(syscall string, basedir string) {
+  // Extract information from string and create a
+	// syscall entry object with the information.
+	entry := createEntryObject(syscall)
+
+  // Write the syscall entry to disk.
+	writeEntry(entry, entry.SyscallName, basedir)
 }
 
 func extractFunctionPrototype(syscall string) string {
@@ -301,7 +301,6 @@ func extractSyscallNumber(syscall string) string {
 }
 
 func generateEntries(platform string, config []byte) {
-
 	// Extract all the syscall function prototypes and syscall numbers.
 	reg := regexp.MustCompilePOSIX("(^[0-9]+).*?")
 	syscalls := reg.FindAll(config, len(config))
