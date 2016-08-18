@@ -132,7 +132,18 @@ func createArgArray(types []string, args []string, count string) []Arg {
 
 	argArray := make([]Arg, totalArgs)
 
-	symbolArray := [...]string{"FIRST_ARG", "SECOND_ARG", "THIRD_ARG", "FOURTH_ARG", "FIFTH_ARG", "SIXTH_ARG", "SEVENTH_ARG", "EIGTH_ARG"}
+	symbolArray := [...]string{"FIRST_ARG",
+		                         "SECOND_ARG",
+														 "THIRD_ARG",
+														 "FOURTH_ARG",
+														 "FIFTH_ARG",
+														 "SIXTH_ARG",
+														 "SEVENTH_ARG",
+														 "EIGTH_ARG",
+													   "NINTH_ARG",
+													   "TENTH_ARG",
+													   "ELEVENTH_ARG",
+													   "TWELFTH_ARG"}
 
 	for i := 0; i < totalArgs; i++ {
 		argArray[i].GetArg = args[i]
