@@ -75,6 +75,7 @@ func generateGetArgFunction(str []string) []string {
 }
 
 func generateGetArgArray(proto string, count string) []string {
+	// var variables int
 	reg := regexp.MustCompilePOSIX("\\((.*?)\\)")
 	params := reg.Find([]byte(proto))
 
@@ -337,7 +338,7 @@ func defaultBuild() {
 
 	// Check our OS and read it's syscall.master file.
 	if runtime.GOOS == "freebsd" {
-		SyscallListBuf, err = ioutil.ReadFile("freebsd-syscall.master")
+		SyscallListBuf, err = ioutil.ReadFile("input/freebsd-syscall.master")
 		if err != nil {
 			log.Fatal(err)
 			return
@@ -345,7 +346,7 @@ func defaultBuild() {
 	}
 
 	if runtime.GOOS == "darwin" {
-		SyscallListBuf, err = ioutil.ReadFile("osx-syscall.master")
+		SyscallListBuf, err = ioutil.ReadFile("input/osx-syscall.master")
 		if err != nil {
 			log.Fatal(err)
 			return
