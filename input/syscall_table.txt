@@ -1,0 +1,17 @@
+{{ template "copyright" . }}
+{{ template "warning" . }}
+
+#ifndef MAC_OSX_SYSCALL_TABLE_H
+#define MAC_OSX_SYSCALL_TABLE_H
+
+#include "syscall_list.h"
+#include "syscall_table.h"
+
+struct syscall_table mac_osx_syscall_table = {
+.total_syscalls = {{.TotalSyscalls}},
+{{ range $i, $e := .Syscall}}
+.sys_entry[{{.Counter}}] = &{{$e.Name}},
+{{ end }}
+}
+
+#endif

@@ -9,10 +9,8 @@ struct syscall_entry entry_{{.SyscallName}} = {
     .total_args = {{.TotalArgs}},
     .return_type = "{{.ReturnType}}",
     .status = ON,
-
   {{ range $i, $e := .ArgArray}}
     .arg_type_array[{{$e.ArgSymbol}}] = {{$e.ArgType}},
     .get_arg_array[{{$e.ArgSymbol}}] = {{$e.GetArg}},
   {{ end }}
-
 };

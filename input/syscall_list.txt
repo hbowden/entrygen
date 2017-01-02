@@ -1,0 +1,18 @@
+{{ template "copyright" . }}
+{{ template "warning" . }}
+
+#ifndef SYSCALL_LIST_H
+#define SYSCALL_LIST_H
+
+#include "arg_types.h"
+#include "generate.h"
+#include "entry.h"
+
+#include <sys/syscall.h>
+#include <unistd.h>
+
+{{ range $i, $e := .Syscall}}
+extern struct syscall_entry {{$e.Name}};
+{{ end }}
+
+#endif
